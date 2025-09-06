@@ -8,4 +8,5 @@ fun Character.toUi(): CharacterUi = CharacterUi(
     name = name,
     species = species,
     image = image,
+    status = status
 )

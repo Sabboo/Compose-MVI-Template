@@ -11,7 +11,8 @@ fun CharacterDto.toDomain(): Character = Character(
     id = id,
     name = name,
     species = species,
-    image = image
+    image = image,
+    status = status
 )
 
 fun CharacterResponseDto.toDomain(): CharacterResponse = CharacterResponse(
