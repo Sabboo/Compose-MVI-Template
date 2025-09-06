@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.junit5)
     id("kotlin-parcelize")
     id("org.jetbrains.kotlin.kapt")
 }
@@ -76,4 +77,13 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.coroutines.android)
+
+    // Testing
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
+    testImplementation(libs.mockito.junit.jupiter)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }
