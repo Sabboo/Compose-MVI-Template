@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Compose-Template"
 include(":app")
+
+enableFeaturePreview("STABLE_CONFIGURATION_CACHE")

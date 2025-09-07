@@ -4,10 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.junit5)
-    id("kotlin-parcelize")
-    id("org.jetbrains.kotlin.kapt")
-    id("com.autonomousapps.dependency-analysis") version "3.0.1"
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kapt)
 }
 
 android {
@@ -53,8 +51,6 @@ kotlin {
 
 dependencies {
     implementation(platform(libs.compose.bom))
-    implementation(libs.core.ktx)
-    implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
 
     implementation(libs.compose.ui)
@@ -77,11 +73,11 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.coil.compose)
-    implementation(libs.coroutines.android)
+    runtimeOnly(libs.coroutines.android)
 
     // Testing
+    testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
-    testImplementation(libs.junit.jupiter.engine)
     testImplementation(libs.mockito.junit.jupiter)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
