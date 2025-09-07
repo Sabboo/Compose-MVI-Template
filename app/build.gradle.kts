@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.junit5)
     id("kotlin-parcelize")
     id("org.jetbrains.kotlin.kapt")
+    id("com.autonomousapps.dependency-analysis") version "3.0.1"
 }
 
 android {
@@ -86,4 +87,5 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    testImplementation(libs.assertj.core)
 }

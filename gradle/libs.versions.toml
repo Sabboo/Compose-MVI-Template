@@ -1,4 +1,5 @@
 [versions]
+assertj-core = "3.27.4"
 junit-jupiter-api = "5.13.4"
 junit-jupiter-engine = "5.13.4"
 kotlin = "2.2.10"
@@ -27,6 +28,7 @@ junit5 = "1.13.2.0"
 turbine = "1.2.1"
 
 [libraries]
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
