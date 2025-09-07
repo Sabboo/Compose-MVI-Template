@@ -35,7 +35,7 @@ class CharacterListUiStateTest {
     @Test
     fun `search mode with results should return searchResults`() {
         val characters = listOf(createMockCharacterUI(1, "Ricky"), createMockCharacterUI(2))
-        val searchResults = listOf(characters.first())
+        val searchResults = listOf(createMockCharacterUI(1, "Ricky"))
 
         val state = CharacterListUiState(
             characters = characters,
@@ -43,8 +43,8 @@ class CharacterListUiStateTest {
             isSearchMode = true
         )
 
-        assertEquals(1, state.searchResults.size)
-        assertEquals("Ricky", state.searchResults.first().name)
+        assertEquals(searchResults.size, state.searchResults.size)
+        assertEquals(searchResults.first().name, state.searchResults.first().name)
         assertTrue(state.isSearchMode)
     }
 
