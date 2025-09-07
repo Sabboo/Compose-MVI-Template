@@ -99,7 +99,16 @@ class CharacterListViewModel @Inject constructor(
         updateState { copy(searchQuery = trimmedQuery) }
 
         val filtered = cachedCharacters.filter { it.name.contains(trimmedQuery, ignoreCase = true) }
-        updateState { withSearchResults(filtered, isSearchMode = trimmedQuery.isNotEmpty()) }
+        updateState {
+            copy(
+                searchResults = filtered,
+                isSearchMode = trimmedQuery.isNotEmpty(),
+                isEmpty = filtered.isEmpty(),
+                hasNextSearchPage = false,
+                currentSearchPage = 1,
+                isSearching = false
+            )
+        }
 
         if (trimmedQuery.isNotEmpty()) searchDebouncer.tryEmit(trimmedQuery)
     }
@@ -138,23 +147,20 @@ class CharacterListViewModel @Inject constructor(
             val result = searchCharactersUseCase(query, page = 1)
             val searchResults = result.results.map { it.toUi() }
 
-            updateState { withSearchResults(searchResults, isSearchMode = true) }
+            updateState {
+                copy(
+                    searchResults = searchResults,
+                    isSearchMode = true,
+                    hasNextSearchPage = result.info.next != null,
+                    isSearching = false,
+                    isEmpty = searchResults.isEmpty(),
+                    currentSearchPage = result.info.next?.toIntOrNull() ?: 1
+                )
+            }
         } catch (_: Exception) {
             updateState { copy(isSearching = false) }
         }
     }
-
-    private fun CharacterListUiState.withSearchResults(
-        results: List<CharacterUi>,
-        isSearchMode: Boolean
-    ) = copy(
-        searchResults = results,
-        isSearchMode = isSearchMode,
-        isEmpty = results.isEmpty(),
-        currentSearchPage = 1,
-        hasNextSearchPage = true,
-        isSearching = false
-    )
 
     fun loadNextPage() {
         val state = _uiState.value
@@ -178,7 +184,8 @@ class CharacterListViewModel @Inject constructor(
                 else getCharactersUseCase(page)
                 val newChars = result.results.map { it.toUi() }
 
-                val updatedList = if (isSearch) state.searchResults + newChars else state.characters + newChars
+                val updatedList =
+                    if (isSearch) state.searchResults + newChars else state.characters + newChars
                 if (!isSearch) cachedCharacters = updatedList
 
                 updateState {

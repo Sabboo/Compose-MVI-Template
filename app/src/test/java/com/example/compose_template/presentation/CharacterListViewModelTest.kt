@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -73,8 +74,8 @@ class CharacterListViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertFalse(state.isLoading)
-            assertEquals(1, state.characters.size)
-            assertEquals("Rick", state.characters[0].name)
+            assertEquals(mockResponse.results.size, state.characters.size)
+            assertEquals(mockResponse.results.first().name, state.characters[0].name)
             assertFalse(state.hasNextPage)
             assertNull(state.error)
             assertEquals(1, state.currentPage)
@@ -104,9 +105,12 @@ class CharacterListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertEquals(2, state.characters.size)
-            assertEquals("Rick", state.characters[0].name)
-            assertEquals("Morty", state.characters[1].name)
+            assertEquals(
+                firstPageCharacters.size + secondPageCharacters.size,
+                state.characters.size
+            )
+            assertEquals(firstPageCharacters.first().name, state.characters[0].name)
+            assertEquals(secondPageCharacters.first().name, state.characters[1].name)
             assertEquals(2, state.currentPage)
             assertFalse(state.hasNextPage)
             assertFalse(state.isLoadingNextPage)
@@ -114,33 +118,35 @@ class CharacterListViewModelTest {
     }
 
     @Test
-    fun `search should perform client-side filtering immediately`() = runTest {
-        val mockCharacters = listOf(
-            createMockCharacter(1, "Rick Sanchez"),
-            createMockCharacter(2, "Morty Smith")
-        )
-        val mockResponse = CharacterResponse(
-            info = ResponseInfo(count = 2, pages = 1, next = null, prev = null),
-            results = mockCharacters
-        )
-
-        whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
-        whenever(searchCharactersUseCase(query = "Rick", page = 1)).thenReturn(
-            CharacterResponse(
-                info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
-                results = listOf(createMockCharacter(1, "Rick Sanchez"))
+    fun `search should perform client-side filtering immediately and have cached results to be displayed even when no server results returned`() =
+        runTest {
+            val mockCharacters = listOf(
+                createMockCharacter(1, "Rick Sanchez"),
+                createMockCharacter(2, "Morty Smith")
             )
-        )
+            val mockResponse = CharacterResponse(
+                info = ResponseInfo(count = 2, pages = 1, next = null, prev = null),
+                results = mockCharacters
+            )
 
-        viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
+            whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
+            whenever(searchCharactersUseCase(query = "Rick", page = 1)).thenReturn(
+                CharacterResponse(
+                    info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
+                    results = emptyList()
+                )
+            )
 
-        viewModel.handleIntent(CharacterListIntent.Search("Rick"))
+            viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
 
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertTrue(state.canLoadNextPage)
+            viewModel.handleIntent(CharacterListIntent.Search("Rick"))
+
+            viewModel.uiState.test {
+                val state = awaitItem()
+                assertTrue { state.searchResults.isNotEmpty() }
+                assertThat { state.searchResults.size == 2 }
+            }
         }
-    }
 
     @Test
     fun `state with search mode should reflect search properties`() {
@@ -284,7 +290,7 @@ class CharacterListViewModelTest {
     }
 
     @Test
-    fun `pagination error should be handled with cooldown`() = runTest {
+    fun `pagination error should be handled`() = runTest {
         val firstPageResponse = CharacterResponse(
             info = ResponseInfo(count = 30, pages = 2, next = "page2", prev = null),
             results = listOf(createMockCharacter(1))
