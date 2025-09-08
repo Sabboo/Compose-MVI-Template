@@ -166,40 +166,21 @@ class CharacterListViewModel @Inject constructor(
         val state = _uiState.value
         if (state.isLoadingNextPage || !state.canLoadNextPage) return
 
-        if (state.isSearchMode) loadNextPage(isSearch = true)
-        else loadNextPage(isSearch = false)
-    }
+        val strategy: PaginationStrategy = if (state.isSearchMode) {
+            SearchPaginationStrategy(searchCharactersUseCase, state.searchQuery)
+        } else {
+            NormalPaginationStrategy(getCharactersUseCase)
+        }
 
-    private fun loadNextPage(isSearch: Boolean) {
-        val state = _uiState.value
-        val canLoad = if (isSearch) state.hasNextSearchPage else state.hasNextPage
-        if (!canLoad) return
+        if (!strategy.canLoad(state)) return
 
         viewModelScope.launch {
             updateState { copy(isLoadingNextPage = true, paginationError = null) }
 
             try {
-                val page = if (isSearch) state.currentSearchPage + 1 else state.currentPage + 1
-                val result = if (isSearch) searchCharactersUseCase(state.searchQuery, page)
-                else getCharactersUseCase(page)
-                val newChars = result.results.map { it.toUi() }
-
-                val updatedList =
-                    if (isSearch) state.searchResults + newChars else state.characters + newChars
-                if (!isSearch) cachedCharacters = updatedList
-
-                updateState {
-                    copy(
-                        characters = if (!isSearch) updatedList else characters,
-                        searchResults = if (isSearch) updatedList else searchResults,
-                        isLoadingNextPage = false,
-                        currentPage = if (!isSearch) page else currentPage,
-                        currentSearchPage = if (isSearch) page else currentSearchPage,
-                        hasNextPage = if (!isSearch) result.info.next != null else hasNextPage,
-                        hasNextSearchPage = if (isSearch) result.info.next != null else hasNextSearchPage,
-                        paginationError = null
-                    )
-                }
+                val page = strategy.nextPage(state)
+                val result = strategy.fetch(page)
+                updateState { strategy.updateState(this, page, result) }
             } catch (e: Exception) {
                 handlePaginationError(e)
             }
