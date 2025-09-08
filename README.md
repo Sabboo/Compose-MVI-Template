@@ -13,6 +13,19 @@ After cloning the project and syncing gradle, run the following command to compi
 
 ---
 
+### Testing
+
+The application currently have a set of unit tests to validate `some` of the test cases. To run the available unit tests run the following command  
+
+```sh
+./gradlew :app:testDebugUnitTest
+```
+
+You will have a generated report file at `app/build/reports/tests/testDebugUnitTest/` labeled index.html where you can check unit tests results.  
+It should look like this ![Tests Screenshot](assets/tests-screenshot.png)
+
+---
+
 ### Architectural Choices
 
 ##### - MVI Presentation Pattern
