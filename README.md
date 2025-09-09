@@ -58,12 +58,6 @@ ViewModels are unit-testable. Uses Turbine for testing Flow emissions. Mockito f
 
 ---
 
-### Assumptions and Decisions
-  1- The first assumption was related to search functionality and wheather we should handle pagnination for search results -> Discision was made to apply pagination for search results returned from server side.  
-  2- Next, the assumption related to how the search functionality will behave in respect to normal data retreival. We will show data retrieved from server side and when the user start searching should we fetch the search results from server side only or we can make use of the already retrieved data and return an instant search results from the available snapshot -> Descision was made to apply this behavior to return an instant search results from the available snapshot until the app receive results from server side.  
-  3- Another assumption related to the previous point and wheather we should store these data in memory or persistent storage -> Discision was made to cache them in memory only as it wasn't stated that we need an offline first approach.
-  
----
-
 ### Next Steps
+ - [ ] Replace mockito with mockk
  - [ ] Add UI Tests
