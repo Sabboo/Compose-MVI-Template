@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" , "setup_github_action" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" , "setup_github_action" ]
 
 jobs:
   build:
