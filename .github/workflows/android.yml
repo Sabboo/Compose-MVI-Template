@@ -32,12 +32,6 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew :app:testDebugUnitTest
 
-      # Setup python for next task
-      - name: Set up Python 3.13.7
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.13.7
-
       - name: Report
         uses: FlickerSoul/android-test-report-actions@v1.2
         with:
