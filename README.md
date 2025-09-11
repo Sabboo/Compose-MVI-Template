@@ -15,14 +15,19 @@ After cloning the project and syncing gradle, run the following command to compi
 
 ### Testing
 
-The application currently have a set of unit tests to validate `some` of the test cases. To run the available unit tests run the following command  
+The application currently have a set of unit tests and UI tests to validate `some` of the test cases. To run the available tests run the following command
 
 ```sh
 ./gradlew :app:testDebugUnitTest
 ```
 
-You will have a generated report file at `app/build/reports/tests/testDebugUnitTest/` labeled index.html where you can check unit tests results.  
-It should look like this ![Tests Screenshot](assets/tests-screenshot.png)
+And for UI tests after you run the Emulator
+
+```sh
+./gradlew :app:connectedDebugAndroidTest
+```
+
+You will have a generated report file at `app/build/reports/tests/testDebugUnitTest/` and `app/build/reports/androidTests/connected/debug/` labeled index.html where you can check unit and UI tests results.
 
 ---
 
@@ -59,5 +64,6 @@ ViewModels are unit-testable. Uses Turbine for testing Flow emissions. Mockito f
 ---
 
 ### Next Steps
- - [ ] Replace mockito with mockk
- - [ ] Add UI Tests
+ - [ ] Add E2E testing 
+ - [X] Replace mockito with mockk and Add UI Tests
+ - [X] Add Github Actions to build and test on every PR to main
