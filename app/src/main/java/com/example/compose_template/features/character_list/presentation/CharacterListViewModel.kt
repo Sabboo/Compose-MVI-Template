@@ -24,7 +24,7 @@ import javax.inject.Inject
 import kotlin.collections.filter
 
 @HiltViewModel
-open class CharacterListViewModel @Inject constructor(
+class CharacterListViewModel @Inject constructor(
     private val getCharactersUseCase: GetCharactersUseCase,
     private val searchCharactersUseCase: SearchCharactersUseCase
 ) : ViewModel(), BaseViewModel<CharacterListUiState, CharacterListIntent> {
