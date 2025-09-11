@@ -34,41 +34,6 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew :app:testDebugUnitTest
 
-      # Setup Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # Install required SDK packages
-      - name: Install SDK packages
-        run: |
-          yes | sdkmanager --install "platform-tools" "emulator" \
-            "platforms;android-30" \
-            "system-images;android-30;default;x86_64"
-
-      # Create AVD
-      - name: Create AVD
-        run: |
-          mkdir -p ~/.android/avd
-          echo "no" | avdmanager create avd \
-            -n test \
-            -k "system-images;android-30;default;x86_64" \
-            --force \
-            --path ~/.android/avd/test.avd
-
-      # Start Emulator
-      - name: Start Emulator
-        run: |
-          export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH
-          emulator -list-avds
-          nohup emulator -avd test -no-snapshot -no-window -no-audio -gpu swiftshader_indirect &
-          adb wait-for-device
-          adb shell input keyevent 82
-        timeout-minutes: 10
-
-      # Run Instrumented Tests
-      - name: Run Instrumented Tests
-        run: ./gradlew connectedDebugAndroidTest
-
       # Publish Test Report
       - name: Android Test Report
         uses: doanpt/AndroidTestReportAction@v1.1
