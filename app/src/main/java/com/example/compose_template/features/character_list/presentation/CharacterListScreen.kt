@@ -27,9 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.compose_template.BaseViewModel
+import com.example.compose_template.features.character_list.presentation.TestTags.CHARACTERS_LIST
+import com.example.compose_template.features.character_list.presentation.TestTags.LOADING_INDICATOR
 import com.example.compose_template.features.character_list.presentation.model.CharacterUi
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -37,7 +41,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun CharacterListScreen(
     onCharacterClick: (CharacterUi) -> Unit,
-    viewModel: CharacterListViewModel = hiltViewModel()
+    viewModel: BaseViewModel<CharacterListUiState, CharacterListIntent> = hiltViewModel<CharacterListViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -66,7 +70,7 @@ fun CharacterListScreen(
                 listState = listState,
                 onCharacterClick = onCharacterClick,
                 onRetryPage = { viewModel.handleIntent(CharacterListIntent.RetryLastPage) },
-                onLoadNextPage = { viewModel.handleIntent(CharacterListIntent.LoadNextPage) }
+                loadInitialData = { viewModel.handleIntent(CharacterListIntent.LoadInitial) }
             )
         }
     }
@@ -118,13 +122,13 @@ private fun CharacterListContent(
     listState: LazyListState,
     onCharacterClick: (CharacterUi) -> Unit,
     onRetryPage: () -> Unit,
-    onLoadNextPage: () -> Unit
+    loadInitialData: () -> Unit
 ) {
     when {
         uiState.isLoading -> LoadingState()
         uiState.error != null && characters.isEmpty() -> ErrorState(
             message = uiState.error,
-            onRetry = { onLoadNextPage() }
+            onRetry = { loadInitialData() }
         )
 
         uiState.isEmpty -> EmptyState(
@@ -149,7 +153,7 @@ private fun LoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-    ) { CircularProgressIndicator() }
+    ) { CircularProgressIndicator(modifier = Modifier.testTag(LOADING_INDICATOR)) }
 }
 
 @Composable
@@ -163,6 +167,7 @@ private fun CharacterList(
     onRetryPage: () -> Unit
 ) {
     LazyColumn(
+        modifier = Modifier.testTag(CHARACTERS_LIST),
         state = listState,
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

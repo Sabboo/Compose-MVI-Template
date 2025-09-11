@@ -2,6 +2,7 @@ package com.example.compose_template.features.character_list.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.compose_template.BaseViewModel
 import com.example.compose_template.features.character_list.domain.usecase.GetCharactersUseCase
 import com.example.compose_template.features.character_list.domain.usecase.SearchCharactersUseCase
 import com.example.compose_template.features.character_list.presentation.mapper.toUi
@@ -23,13 +24,13 @@ import javax.inject.Inject
 import kotlin.collections.filter
 
 @HiltViewModel
-class CharacterListViewModel @Inject constructor(
+open class CharacterListViewModel @Inject constructor(
     private val getCharactersUseCase: GetCharactersUseCase,
     private val searchCharactersUseCase: SearchCharactersUseCase
-) : ViewModel() {
+) : ViewModel(), BaseViewModel<CharacterListUiState, CharacterListIntent> {
 
     private val _uiState = MutableStateFlow(CharacterListUiState())
-    val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
+    override val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
 
     private val searchDebouncer = MutableSharedFlow<String>(
         replay = 1,
@@ -49,7 +50,7 @@ class CharacterListViewModel @Inject constructor(
         setupSearchDebouncer()
     }
 
-    fun handleIntent(intent: CharacterListIntent) {
+    override fun handleIntent(intent: CharacterListIntent) {
         when (intent) {
             is CharacterListIntent.LoadInitial -> loadInitialData()
             is CharacterListIntent.LoadNextPage -> loadNextPage()
