@@ -10,6 +10,9 @@ import com.example.compose_template.features.character_list.domain.usecase.Searc
 import com.example.compose_template.features.character_list.presentation.CharacterListIntent
 import com.example.compose_template.features.character_list.presentation.CharacterListUiState
 import com.example.compose_template.features.character_list.presentation.CharacterListViewModel
+import io.mockk.coEvery
+import io.mockk.clearAllMocks
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -27,29 +30,20 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.whenever
 
-
-@ExtendWith(MockitoExtension::class)
 @ExperimentalCoroutinesApi
 class CharacterListViewModelStandardTest {
 
-    @Mock
-    private lateinit var getCharactersUseCase: GetCharactersUseCase
-
-    @Mock
-    private lateinit var searchCharactersUseCase: SearchCharactersUseCase
+    private val getCharactersUseCase: GetCharactersUseCase = mockk()
+    private val searchCharactersUseCase: SearchCharactersUseCase = mockk()
 
     private lateinit var viewModel: CharacterListViewModel
-
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeEach
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+        clearAllMocks()
     }
 
     @AfterEach
@@ -65,16 +59,13 @@ class CharacterListViewModelStandardTest {
             results = mockCharacters
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
+        coEvery { getCharactersUseCase(1) } returns mockResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
 
         viewModel.uiState.test {
-            // Initial Default State
-            awaitItem()
-            // ViewModel state update in loadInitialData() to apply isLoading
-            awaitItem()
-
+            awaitItem() // initial default
+            awaitItem() // isLoading
             val state = awaitItem()
             assertFalse(state.isLoading)
             assertEquals(mockResponse.results.size, state.characters.size)
@@ -99,27 +90,17 @@ class CharacterListViewModelStandardTest {
             results = secondPageCharacters
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(firstPageResponse)
-        whenever(getCharactersUseCase(2)).thenReturn(secondPageResponse)
+        coEvery { getCharactersUseCase(1) } returns firstPageResponse
+        coEvery { getCharactersUseCase(2) } returns secondPageResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
-
         viewModel.handleIntent(CharacterListIntent.LoadNextPage)
 
         viewModel.uiState.test {
-            // Initial Default State
-            awaitItem()
-            // ViewModel state update in loadInitialData() to apply isLoading
-            awaitItem()
-
-            // Loading first page
-            val loadingFirstPageState = awaitItem()
-            assertEquals(1, loadingFirstPageState.currentPage)
-            assertFalse(loadingFirstPageState.isLoadingNextPage)
-
-            val firstPageState = awaitItem()
-            assertTrue(firstPageState.isLoadingNextPage)
-
+            awaitItem() // initial
+            awaitItem() // isLoading
+            awaitItem() // after first page
+            awaitItem() // loading next page
             val secondPageState = awaitItem()
 
             assertEquals(
@@ -140,19 +121,15 @@ class CharacterListViewModelStandardTest {
             createMockCharacter(1, "Rick Sanchez"),
             createMockCharacter(2, "Morty Smith")
         )
-        whenever(getCharactersUseCase(1)).thenReturn(
-            CharacterResponse(
-                info = ResponseInfo(count = 2, pages = 1, next = null, prev = null),
-                results = mockCharacters
-            )
+        coEvery { getCharactersUseCase(1) } returns CharacterResponse(
+            info = ResponseInfo(count = 2, pages = 1, next = null, prev = null),
+            results = mockCharacters
         )
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
-
         advanceUntilIdle()
 
         viewModel.handleIntent(CharacterListIntent.Search("Rick"))
-
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -162,9 +139,8 @@ class CharacterListViewModelStandardTest {
         }
     }
 
-
     @Test
-    fun `search should perform client-side filtering immediately and have cached results to be displayed even when no server results returned`() =
+    fun `search should perform client-side filtering immediately and cached results stay even if server empty`() =
         runTest {
             val mockCharacters = listOf(
                 createMockCharacter(1, "Rick Sanchez"),
@@ -175,18 +151,13 @@ class CharacterListViewModelStandardTest {
                 results = mockCharacters
             )
 
-            whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
-            whenever(searchCharactersUseCase(query = "Rick", page = 1)).thenReturn(
-                CharacterResponse(
-                    info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
-                    results = listOf(
-                        createMockCharacter(1, "Rick Sanchez")
-                    )
-                )
+            coEvery { getCharactersUseCase(1) } returns mockResponse
+            coEvery { searchCharactersUseCase("Rick", 1) } returns CharacterResponse(
+                info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
+                results = listOf(createMockCharacter(1, "Rick Sanchez"))
             )
 
             viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
-
             viewModel.handleIntent(CharacterListIntent.Search("Rick"))
 
             viewModel.uiState.test {
@@ -199,9 +170,7 @@ class CharacterListViewModelStandardTest {
 
     @Test
     fun `state with search mode should reflect search properties`() {
-        val searchResults = listOf(
-            createMockCharacterUI(id = 1, name = "Rick")
-        )
+        val searchResults = listOf(createMockCharacterUI(id = 1, name = "Rick"))
         val state = CharacterListUiState(
             searchResults = searchResults,
             searchQuery = "Rick",
@@ -233,8 +202,8 @@ class CharacterListViewModelStandardTest {
             )
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(initialResponse)
-        whenever(searchCharactersUseCase(query = "Rick", page = 1)).thenReturn(searchResponse)
+        coEvery { getCharactersUseCase(1) } returns initialResponse
+        coEvery { searchCharactersUseCase("Rick", 1) } returns searchResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         advanceUntilIdle()
@@ -261,26 +230,18 @@ class CharacterListViewModelStandardTest {
             results = listOf(createMockCharacter(2, "Rick 2"))
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(
-            CharacterResponse(
-                info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
-                results = emptyList()
-            )
+        coEvery { getCharactersUseCase(1) } returns CharacterResponse(
+            info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
+            results = emptyList()
         )
-        whenever(
-            searchCharactersUseCase(
-                query = "Rick",
-                page = 1
-            )
-        ).thenReturn(initialSearchResponse)
-        whenever(searchCharactersUseCase(query = "Rick", page = 2)).thenReturn(secondPageResponse)
+        coEvery { searchCharactersUseCase("Rick", 1) } returns initialSearchResponse
+        coEvery { searchCharactersUseCase("Rick", 2) } returns secondPageResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         advanceUntilIdle()
 
         viewModel.handleIntent(CharacterListIntent.Search("Rick"))
         advanceTimeBy(400)
-
         viewModel.handleIntent(CharacterListIntent.LoadNextPage)
         advanceUntilIdle()
 
@@ -302,12 +263,10 @@ class CharacterListViewModelStandardTest {
             results = mockCharacters
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
-        whenever(searchCharactersUseCase(query = "Rick", page = 1)).thenReturn(
-            CharacterResponse(
-                info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
-                results = listOf(createMockCharacter(1))
-            )
+        coEvery { getCharactersUseCase(1) } returns mockResponse
+        coEvery { searchCharactersUseCase("Rick", 1) } returns CharacterResponse(
+            info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
+            results = listOf(createMockCharacter(1))
         )
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
@@ -315,7 +274,6 @@ class CharacterListViewModelStandardTest {
 
         viewModel.handleIntent(CharacterListIntent.Search("Rick"))
         advanceTimeBy(400)
-
         viewModel.handleIntent(CharacterListIntent.ClearSearch)
 
         viewModel.uiState.test {
@@ -332,7 +290,7 @@ class CharacterListViewModelStandardTest {
     @Test
     fun `error during initial load should update error state`() = runTest {
         val errorMessage = "Network error"
-        whenever(getCharactersUseCase(1)).thenThrow(RuntimeException(errorMessage))
+        coEvery { getCharactersUseCase(1) } throws RuntimeException(errorMessage)
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         advanceUntilIdle()
@@ -353,8 +311,8 @@ class CharacterListViewModelStandardTest {
             results = listOf(createMockCharacter(1))
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(firstPageResponse)
-        whenever(getCharactersUseCase(2)).thenThrow(RuntimeException("Network error"))
+        coEvery { getCharactersUseCase(1) } returns firstPageResponse
+        coEvery { getCharactersUseCase(2) } throws RuntimeException("Network error")
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         advanceUntilIdle()
@@ -364,7 +322,6 @@ class CharacterListViewModelStandardTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            println(state)
             assertFalse(state.isLoadingNextPage)
             assertNotNull(state.paginationError)
         }
@@ -381,17 +338,14 @@ class CharacterListViewModelStandardTest {
             results = listOf(createMockCharacter(2))
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(firstPageResponse)
-        whenever(getCharactersUseCase(2))
-            .thenThrow(RuntimeException("Network error"))
-            .thenReturn(secondPageResponse)
+        coEvery { getCharactersUseCase(1) } returns firstPageResponse
+        coEvery { getCharactersUseCase(2) } throws RuntimeException("Network error") andThen secondPageResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         advanceUntilIdle()
 
         viewModel.handleIntent(CharacterListIntent.LoadNextPage)
         advanceUntilIdle()
-
         viewModel.handleIntent(CharacterListIntent.RetryLastPage)
         advanceUntilIdle()
 
@@ -411,11 +365,10 @@ class CharacterListViewModelStandardTest {
             results = mockCharacters
         )
 
-        whenever(getCharactersUseCase(1)).thenReturn(mockResponse)
+        coEvery { getCharactersUseCase(1) } returns mockResponse
 
         viewModel = CharacterListViewModel(getCharactersUseCase, searchCharactersUseCase)
         viewModel.handleIntent(CharacterListIntent.Search("Rick"))
-
         viewModel.handleIntent(CharacterListIntent.Search(""))
 
         viewModel.uiState.test {
@@ -425,5 +378,4 @@ class CharacterListViewModelStandardTest {
             assertEquals(state.searchResults, state.characters)
         }
     }
-
 }

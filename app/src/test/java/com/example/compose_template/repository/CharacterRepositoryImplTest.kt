@@ -5,27 +5,22 @@ import com.example.compose_template.features.character_list.data.remote.dto.Char
 import com.example.compose_template.features.character_list.data.remote.dto.CharacterResponseDto
 import com.example.compose_template.features.character_list.data.remote.dto.ResponseInfoDto
 import com.example.compose_template.features.character_list.data.repository.CharacterRepositoryImpl
-import kotlinx.coroutines.runBlocking
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
-@ExtendWith(MockitoExtension::class)
 class CharacterRepositoryImplTest {
 
-    @Mock
-    private lateinit var apiService: CharacterApiService
+    private val apiService: CharacterApiService = mockk(relaxed = true)
 
     private lateinit var repository: CharacterRepositoryImpl
 
@@ -41,7 +36,7 @@ class CharacterRepositoryImplTest {
             info = ResponseInfoDto(count = 1, pages = 1),
             results = listOf(createMockCharacterDto(1))
         )
-        whenever(apiService.getCharacters(1)).thenReturn(mockDto)
+        coEvery { apiService.getCharacters(1) } returns mockDto
 
         // When
         val result = repository.getCharacters(1)
@@ -50,7 +45,7 @@ class CharacterRepositoryImplTest {
         assertEquals(1, result.results.size)
         assertEquals("Rick Sanchez", result.results[0].name)
         assertEquals(1, result.info.count)
-        verify(apiService).getCharacters(1)
+        coVerify { apiService.getCharacters(1) }
     }
 
     @Test
@@ -62,7 +57,7 @@ class CharacterRepositoryImplTest {
             info = ResponseInfoDto(count = 1, pages = 1),
             results = listOf(createMockCharacterDto(1))
         )
-        whenever(apiService.searchCharacters(query, page)).thenReturn(mockDto)
+        coEvery { apiService.searchCharacters(query, page) } returns mockDto
 
         // When
         val result = repository.searchCharacters(query, page)
@@ -70,14 +65,14 @@ class CharacterRepositoryImplTest {
         // Then
         assertEquals(1, result.results.size)
         assertEquals("Rick Sanchez", result.results[0].name)
-        verify(apiService).searchCharacters(query, page)
+        coVerify { apiService.searchCharacters(query, page) }
     }
 
     @Test
     fun `getCharacter should return mapped domain model`() = runTest {
         // Given
         val mockDto = createMockCharacterDto(1)
-        whenever(apiService.getCharacter(1)).thenReturn(mockDto)
+        coEvery { apiService.getCharacter(1) } returns mockDto
 
         // When
         val result = repository.getCharacter(1)
@@ -85,7 +80,7 @@ class CharacterRepositoryImplTest {
         // Then
         assertEquals(1, result.id)
         assertEquals("Rick Sanchez", result.name)
-        verify(apiService).getCharacter(1)
+        coVerify { apiService.getCharacter(1) }
     }
 
     @Test
@@ -93,10 +88,10 @@ class CharacterRepositoryImplTest {
         val httpException = HttpException(
             Response.error<Any>(404, "Not Found".toResponseBody())
         )
-        whenever(apiService.getCharacter(999)).thenThrow(httpException)
+        coEvery { apiService.getCharacter(999) } throws httpException
 
         val exception = assertThrows<Exception> {
-            runBlocking { repository.getCharacter(999) }
+            repository.getCharacter(999)
         }
         assertEquals("Character not found", exception.message)
     }
@@ -106,10 +101,10 @@ class CharacterRepositoryImplTest {
         val httpException = HttpException(
             Response.error<Any>(500, "Server Error".toResponseBody())
         )
-        whenever(apiService.getCharacters(1)).thenThrow(httpException)
+        coEvery { apiService.getCharacters(1) } throws httpException
 
         val exception = assertThrows<Exception> {
-            runBlocking { repository.getCharacters(1) }
+            repository.getCharacters(1)
         }
         assertEquals("Server error, please try again later", exception.message)
     }
@@ -118,12 +113,10 @@ class CharacterRepositoryImplTest {
     fun `should handle generic network exceptions`() = runTest {
         val networkException = IOException("No internet connection")
 
-        whenever(apiService.getCharacters(1)).thenAnswer {
-            throw networkException
-        }
+        coEvery { apiService.getCharacters(1) } throws networkException
 
         val exception = assertThrows<Exception> {
-            runBlocking { repository.getCharacters(1) }
+            repository.getCharacters(1)
         }
         assertEquals("Network error: No internet connection", exception.message)
     }

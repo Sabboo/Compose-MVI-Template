@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.testImplementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -79,9 +81,8 @@ dependencies {
     // Testing
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
-    testImplementation(libs.mockito.junit.jupiter)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
+    testImplementation (libs.mockk)
+    testImplementation (libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.assertj.core)

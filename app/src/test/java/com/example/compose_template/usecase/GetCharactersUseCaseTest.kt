@@ -5,23 +5,18 @@ import com.example.compose_template.features.character_list.domain.model.Charact
 import com.example.compose_template.features.character_list.domain.model.ResponseInfo
 import com.example.compose_template.features.character_list.domain.repository.CharacterRepository
 import com.example.compose_template.features.character_list.domain.usecase.GetCharactersUseCase
-import kotlinx.coroutines.runBlocking
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
-@ExtendWith(MockitoExtension::class)
 class GetCharactersUseCaseTest {
 
-    @Mock
-    private lateinit var repository: CharacterRepository
+    private val repository: CharacterRepository = mockk(relaxed = true)
 
     private lateinit var useCase: GetCharactersUseCase
 
@@ -36,22 +31,21 @@ class GetCharactersUseCaseTest {
             info = ResponseInfo(count = 1, pages = 1, next = null, prev = null),
             results = listOf(createMockCharacter(1))
         )
-        whenever(repository.getCharacters(1)).thenReturn(expectedResponse)
+        coEvery { repository.getCharacters(1) } returns expectedResponse
 
         val result = useCase(1)
 
-        assertEquals(expectedResponse, result)
-        verify(repository).getCharacters(1)
+        assertThat(result).isEqualTo(expectedResponse)
+        coVerify { repository.getCharacters(1) }
     }
 
     @Test
     fun `should propagate repository exceptions`() = runTest {
         val expectedException = RuntimeException("Network error")
-        whenever(repository.getCharacters(1)).thenThrow(expectedException)
+        coEvery { repository.getCharacters(1) } throws expectedException
 
         assertThrows<RuntimeException> {
-            runBlocking { useCase(1) }
+            useCase(1)
         }
     }
-
 }
