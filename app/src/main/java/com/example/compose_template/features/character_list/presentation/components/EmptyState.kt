@@ -14,8 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.compose_template.features.character_list.presentation.TestTags
+import com.example.compose_template.features.character_list.presentation.TestTags.EMPTY_WIDGET_TEXT
 
 @Composable
 fun EmptyState(
@@ -24,7 +27,8 @@ fun EmptyState(
 ) {
     Column(
         modifier = modifier
-            .padding(16.dp),
+            .padding(16.dp)
+            .testTag(TestTags.EMPTY_WIDGET),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -38,6 +42,7 @@ fun EmptyState(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
+            modifier = Modifier.testTag(EMPTY_WIDGET_TEXT),
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,

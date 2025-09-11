@@ -17,11 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.compose_template.features.character_list.presentation.model.CharacterUi
 import com.example.compose_template.R
+import com.example.compose_template.features.character_list.presentation.TestTags.characterListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,8 @@ fun CharacterListItem(
     Card(
         onClick = onClick,
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .testTag(characterListItem(character.id)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp)
     ) {

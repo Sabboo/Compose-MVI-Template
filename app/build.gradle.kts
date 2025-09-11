@@ -1,3 +1,7 @@
+import org.gradle.kotlin.dsl.androidTestImplementation
+import org.gradle.kotlin.dsl.debugImplementation
+import org.gradle.kotlin.dsl.implementation
+import org.gradle.kotlin.dsl.kaptAndroidTest
 import org.gradle.kotlin.dsl.testImplementation
 
 plugins {
@@ -21,7 +25,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.example.compose_template.CustomTestRunner"
     }
 
     buildTypes {
@@ -67,6 +71,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    kapt(libs.dagger.hilt.compiler)
     kapt(libs.hilt.compiler)
 
     implementation(libs.retrofit)
@@ -81,9 +86,28 @@ dependencies {
     // Testing
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
-    testImplementation (libs.mockk)
-    testImplementation (libs.kotlin.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.assertj.core)
+    implementation(libs.hilt.android)
+    kapt(libs.dagger.hilt.compiler)
+
+    // UI Testing
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation (libs.androidx.core)
+    androidTestImplementation (libs.androidx.runner)
+    androidTestImplementation (libs.androidx.rules)
+    androidTestImplementation (libs.androidx.junit)
+    androidTestImplementation( libs.androidx.espresso.core)
+    androidTestImplementation (libs.androidx.espresso.contrib)
+    androidTestImplementation (libs.androidx.espresso.intents)
+    androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation (libs.mockk.android)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.hilt.test)
+    kaptAndroidTest(libs.dagger.hilt.compiler)
+    debugImplementation(libs.ui.test.manifest)
+    kaptAndroidTest(libs.hilt.compiler)
 }
