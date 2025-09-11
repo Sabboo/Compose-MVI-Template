@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main", "setup_github_action" ]
+    branches: [ '*' ]
   pull_request:
-    branches: [ "main", "setup_github_action" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -33,6 +33,12 @@ jobs:
       # Run Unit Tests
       - name: Run Unit Tests
         run: ./gradlew :app:testDebugUnitTest
+
+      # Setup python for next task
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
 
       # Publish Test Report
       - name: Android Test Report
