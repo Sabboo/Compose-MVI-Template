@@ -25,7 +25,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew assembleDebug
       
     - name: Run Unit Tests
       run: ./gradlew :app:testDebugUnitTest
@@ -35,3 +35,6 @@ jobs:
 
     - name: Run UI Tests
       run: ./gradlew :app:connectedDebugAndroidTest
+
+    - name: Android  Report Action
+      uses: doanpt/AndroidTestReportAction@v1.1
