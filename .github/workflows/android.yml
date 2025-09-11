@@ -34,5 +34,3 @@ jobs:
 
       - name: Report
         uses: FlickerSoul/android-test-report-actions@v1.2
-        with:
-          show-skipped: "true"  # Optional, default to "false"
