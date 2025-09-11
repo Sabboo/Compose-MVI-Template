@@ -38,6 +38,7 @@ jobs:
         with:
           python-version: 3.13.7
 
-      # Publish Test Report
-      - name: Android Test Report
-        uses: doanpt/AndroidTestReportAction@v1.1
+      - name: Report
+        uses: FlickerSoul/android-test-report-actions@v1.2
+        with:
+          show-skipped: "true"  # Optional, default to "false"
